@@ -1,0 +1,962 @@
+<!doctype html>
+<title>Skyline Technologies</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;600;700&family=Shippori+Mincho:wght@500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ===================================================================
+     Design tokens — "skyline" concept: light = architectural blueprint
+     (daytime, ink on paper, technical outlines); dark = the skyline
+     itself at dusk (silhouettes, lit windows). Not a naive invert —
+     two different renderings of the same subject.
+  ================================================================== */
+  :root{
+    --paper:      #EEF1F7;
+    --surface:    #FBFCFE;
+    --ink:        #10182B;
+    --steel:      #4A5872;
+    --steel-soft: #7B8AA3;
+    --amber:      #C97A1E;
+    --cyan:       #2E7C93;
+    --line:       #C9D2E0;
+    --line-soft:  #DCE2ED;
+
+    /* canvas skyline render tokens */
+    --sky-top:      #DCE6F2;
+    --sky-bottom:   #EEF1F7;
+    --building:     #1B2A44;
+    --grid-line:    #A9BBD1;
+    --window-lit:   #C97A1E;
+
+    --fs-display: clamp(2.35rem, 5.6vw, 4.4rem);
+    --fs-h2:      clamp(1.7rem, 3.1vw, 2.5rem);
+    --fs-h3:      1.28rem;
+    --fs-body:    1.02rem;
+    --fs-small:   0.86rem;
+    --fs-mono:    0.78rem;
+
+    --radius-card: 2px;
+    --radius-pill: 999px;
+
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:      #0A101F;
+      --surface:    #10182B;
+      --ink:        #E9EEF7;
+      --steel:      #A6B3CB;
+      --steel-soft: #7B8AA3;
+      --amber:      #F0AE55;
+      --cyan:       #5FD1E8;
+      --line:       rgba(255,255,255,0.14);
+      --line-soft:  rgba(255,255,255,0.08);
+
+      --sky-top:      #0A101F;
+      --sky-bottom:   #1C2A44;
+      --building:     #060A13;
+      --grid-line:    rgba(255,255,255,0.16);
+      --window-lit:   #F0AE55;
+    }
+  }
+
+  :root[data-theme="dark"]{
+    --paper:      #0A101F;
+    --surface:    #10182B;
+    --ink:        #E9EEF7;
+    --steel:      #A6B3CB;
+    --steel-soft: #7B8AA3;
+    --amber:      #F0AE55;
+    --cyan:       #5FD1E8;
+    --line:       rgba(255,255,255,0.14);
+    --line-soft:  rgba(255,255,255,0.08);
+
+    --sky-top:      #0A101F;
+    --sky-bottom:   #1C2A44;
+    --building:     #060A13;
+    --grid-line:    rgba(255,255,255,0.16);
+    --window-lit:   #F0AE55;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: auto; }
+  @media (prefers-reduced-motion: no-preference){
+    html{ scroll-behavior: smooth; }
+  }
+  html, body{ margin:0; padding:0; }
+  body{
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Noto Sans JP", "Zen Kaku Gothic New", sans-serif;
+    font-size: var(--fs-body);
+    line-height: 1.85;
+    -webkit-font-smoothing: antialiased;
+  }
+  img{ max-width: 100%; }
+  [hidden]{ display:none !important; }
+
+  h1,h2,h3{
+    font-family: "Zen Kaku Gothic New", "Noto Sans JP", sans-serif;
+    font-weight: 700;
+    line-height: 1.4;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .mono{
+    font-family: "IBM Plex Mono", "Noto Sans JP", monospace;
+    letter-spacing: 0.04em;
+  }
+  .eyebrow{
+    font-family: "IBM Plex Mono", monospace;
+    font-size: var(--fs-mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+  }
+  .eyebrow::before{
+    content:"";
+    width: 1.1em;
+    height: 1px;
+    background: var(--cyan);
+    display:inline-block;
+  }
+
+  .wrap{
+    max-width: 1120px;
+    margin: 0 auto;
+    padding-inline: clamp(20px, 5vw, 48px);
+  }
+
+  a{ color: inherit; }
+
+  /* ---------- nav ---------- */
+  .site-nav{
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 50;
+    background: color-mix(in srgb, var(--paper) 86%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .site-nav .wrap{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-block: 14px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap: 0.7rem;
+    text-decoration:none;
+    color: var(--ink);
+  }
+  .brand-mark{
+    display:flex;
+    align-items:flex-end;
+    gap: 3px;
+    height: 20px;
+  }
+  .brand-mark span{
+    width: 4px;
+    background: var(--amber);
+    display:block;
+  }
+  .brand-mark span:nth-child(1){ height: 55%; }
+  .brand-mark span:nth-child(2){ height: 100%; background: var(--cyan); }
+  .brand-mark span:nth-child(3){ height: 75%; }
+  .brand-name{
+    font-family:"Zen Kaku Gothic New", sans-serif;
+    font-weight:700;
+    font-size: 0.98rem;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .brand-name small{
+    display:block;
+    font-family:"IBM Plex Mono", monospace;
+    font-weight:400;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    color: var(--steel-soft);
+  }
+  .nav-links{
+    display:flex;
+    gap: 1.8rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    list-style:none;
+    margin:0; padding:0;
+  }
+  .nav-links a{ text-decoration:none; color: var(--steel); transition: color .15s; }
+  .nav-links a:hover, .nav-links a:focus-visible{ color: var(--ink); }
+  @media (max-width: 760px){ .nav-links{ display:none; } }
+
+  .btn{
+    font-family:"Zen Kaku Gothic New", sans-serif;
+    font-weight:600;
+    font-size: 0.9rem;
+    padding: 0.65em 1.3em;
+    border-radius: var(--radius-pill);
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap: 0.5em;
+    border: 1px solid transparent;
+    cursor:pointer;
+    transition: transform .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .btn:focus-visible{ outline: 2px solid var(--cyan); outline-offset: 2px; }
+  .btn-primary{ background: var(--ink); color: var(--paper); }
+  .btn-primary:hover{ transform: translateY(-1px); }
+  .btn-ghost{ border-color: var(--line); color: var(--ink); }
+  .btn-ghost:hover{ border-color: var(--steel); }
+  .btn-amber{ background: var(--amber); color: #1A0F02; }
+  .btn-amber:hover{ transform: translateY(-1px); }
+
+  /* ---------- hero ---------- */
+  .hero{ padding-block: clamp(48px, 8vw, 88px) 0; }
+  .hero-grid{
+    display:grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: clamp(28px, 5vw, 56px);
+    align-items:center;
+  }
+  @media (max-width: 860px){ .hero-grid{ grid-template-columns: 1fr; } }
+
+  .hero-title{ font-size: var(--fs-display); margin-block: 0.5em 0.6em; }
+  .hero-lead{
+    color: var(--steel);
+    font-size: 1.02rem;
+    max-width: 34em;
+    margin: 0 0 1.8em;
+  }
+  .hero-cta{ display:flex; gap: 0.9rem; flex-wrap: wrap; }
+
+  .skyline-visual{
+    position:relative;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    overflow:hidden;
+    background: var(--sky-bottom);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity .7s ease, transform .7s ease;
+  }
+  .skyline-visual.is-ready{ opacity:1; transform: translateY(0); }
+  .skyline-visual canvas{ display:block; width:100%; height: 320px; }
+  .skyline-caption{
+    position:absolute;
+    left: 10px; bottom: 8px;
+    font-size: 0.66rem;
+    color: var(--steel-soft);
+    letter-spacing: 0.08em;
+  }
+  @media (max-width:860px){ .skyline-visual canvas{ height: 220px; } }
+
+  /* ---------- sections shared ---------- */
+  section{ padding-block: clamp(56px, 9vw, 100px); }
+  .section-head{
+    display:flex;
+    flex-direction:column;
+    gap: 0.9rem;
+    max-width: 46em;
+    margin-bottom: clamp(30px, 5vw, 52px);
+  }
+  .section-head h2{ font-size: var(--fs-h2); }
+  .section-head p{ color: var(--steel); margin:0; }
+
+  .rule{
+    border:0;
+    border-top: 1px solid var(--line-soft);
+    margin:0;
+  }
+
+  /* ---------- philosophy ---------- */
+  .philosophy{ background: var(--surface); border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); }
+  .philosophy-grid{
+    display:grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: clamp(24px, 5vw, 64px);
+    align-items:start;
+  }
+  @media (max-width: 780px){ .philosophy-grid{ grid-template-columns:1fr; } }
+  .quote{
+    font-family: "Shippori Mincho", serif;
+    font-size: clamp(1.3rem, 2.4vw, 1.7rem);
+    font-weight: 600;
+    line-height: 1.7;
+    color: var(--ink);
+    border-left: 2px solid var(--amber);
+    padding-left: 1.1em;
+    margin: 0;
+  }
+  .philosophy p{ color: var(--steel); margin: 0 0 1.2em; }
+  .stat-row{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line-soft);
+    margin-top: clamp(28px, 4vw, 44px);
+    border: 1px solid var(--line-soft);
+  }
+  @media (max-width: 620px){ .stat-row{ grid-template-columns: repeat(2,1fr); } }
+  .stat{
+    background: var(--paper);
+    padding: 1.4rem 1rem;
+    text-align:left;
+  }
+  .stat b{
+    display:block;
+    font-family:"IBM Plex Mono", monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .stat span{ font-size: 0.78rem; color: var(--steel-soft); letter-spacing: 0.03em; }
+
+  /* ---------- services: elevation cross-section ---------- */
+  .elevation{
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+  }
+  .layer{
+    display:grid;
+    grid-template-columns: 96px 1fr;
+    border-bottom: 1px solid var(--line);
+  }
+  .layer:last-child{ border-bottom:none; }
+  .layer-ruler{
+    border-right: 1px solid var(--line);
+    padding: 1.6rem 0.8rem;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    background: var(--surface);
+  }
+  .layer-ruler .alt{
+    font-family:"IBM Plex Mono", monospace;
+    font-size: 0.68rem;
+    color: var(--steel-soft);
+    letter-spacing: 0.03em;
+  }
+  .layer-ruler .tag{
+    font-family:"IBM Plex Mono", monospace;
+    font-size: 0.68rem;
+    color: var(--cyan);
+    letter-spacing: 0.06em;
+  }
+  .layer-body{
+    padding: clamp(1.6rem, 3vw, 2.4rem);
+    display:grid;
+    grid-template-columns: 1.1fr 1.4fr auto;
+    gap: 1.6rem;
+    align-items:center;
+  }
+  @media (max-width: 900px){
+    .layer{ grid-template-columns: 72px 1fr; }
+    .layer-body{ grid-template-columns: 1fr; gap: 0.8rem; }
+  }
+  .layer-body h3{ font-size: var(--fs-h3); }
+  .layer-body p{ color: var(--steel); margin: 0.4em 0 0; max-width: 34em; }
+  .layer-tags{ display:flex; flex-wrap:wrap; gap: 0.5rem; justify-self: start; }
+  @media (max-width: 900px){ .layer-tags{ justify-self: stretch; } }
+  .chip{
+    font-family:"IBM Plex Mono", monospace;
+    font-size: 0.7rem;
+    padding: 0.35em 0.7em;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    color: var(--steel);
+    white-space:nowrap;
+  }
+  .layer--spire .layer-ruler .tag{ color: var(--amber); }
+
+  /* ---------- works ---------- */
+  .works-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line-soft);
+    border: 1px solid var(--line-soft);
+  }
+  @media (max-width: 900px){ .works-grid{ grid-template-columns: 1fr; } }
+  .work-card{
+    background: var(--paper);
+    padding: clamp(1.6rem, 3vw, 2rem);
+    display:flex;
+    flex-direction:column;
+    gap: 0.9rem;
+  }
+  .work-code{
+    font-family:"IBM Plex Mono", monospace;
+    font-size: 0.7rem;
+    color: var(--amber);
+    letter-spacing: 0.06em;
+  }
+  .work-card h3{ font-size: 1.08rem; }
+  .work-client{ font-size: 0.82rem; color: var(--steel-soft); }
+  .work-card p{ color: var(--steel); margin:0; font-size: 0.95rem; }
+  .work-result{
+    font-size: 0.9rem;
+    color: var(--ink);
+    border-top: 1px solid var(--line-soft);
+    padding-top: 0.8rem;
+    margin-top: auto;
+  }
+  .work-tags{ display:flex; flex-wrap:wrap; gap: 0.4rem; }
+  .work-tags .chip{ font-size: 0.65rem; }
+
+  /* ---------- careers ---------- */
+  .careers{ background: var(--surface); border-top:1px solid var(--line-soft); border-bottom:1px solid var(--line-soft); }
+  .careers-inner{
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    gap: 2rem;
+    flex-wrap:wrap;
+  }
+  .careers-inner p{ color: var(--steel); max-width: 40em; margin: 0.6em 0 0; }
+
+  /* ---------- contact / footer ---------- */
+  .contact-grid{
+    display:grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: clamp(28px, 5vw, 64px);
+    align-items:start;
+  }
+  @media (max-width: 780px){ .contact-grid{ grid-template-columns: 1fr; } }
+
+  .contact-inner{ text-align:left; max-width: 34em; }
+  .contact-inner h2{ font-size: var(--fs-h2); margin-bottom: 0.6em; }
+  .contact-inner p{ color: var(--steel); margin: 0 0 1.6em; }
+
+  .news-panel{
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    background: var(--surface);
+  }
+  .news-panel-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap: 1rem;
+    padding: 1.3rem 1.4rem 0;
+  }
+  .news-panel-head .eyebrow{ margin:0; }
+  .news-count{
+    font-family:"IBM Plex Mono", monospace;
+    font-size: 0.7rem;
+    color: var(--steel-soft);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .news-list{ list-style:none; margin:0; padding: 0.5rem 1.4rem 1.3rem; }
+  .news-item{
+    display:flex;
+    gap: 1rem;
+    padding: 0.95rem 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .news-item:last-child{ border-bottom: none; }
+  .news-date{
+    font-family:"IBM Plex Mono", monospace;
+    font-size: 0.74rem;
+    color: var(--steel-soft);
+    font-variant-numeric: tabular-nums;
+    flex: 0 0 auto;
+    padding-top: 0.2rem;
+    white-space: nowrap;
+  }
+  .news-body{ display:flex; flex-direction:column; gap: 0.35rem; }
+  .news-tag{
+    font-family:"IBM Plex Mono", monospace;
+    font-size: 0.64rem;
+    letter-spacing: 0.06em;
+    color: var(--cyan);
+  }
+  .news-tag.is-new{ color: var(--amber); }
+  .news-title{ font-size: 0.92rem; color: var(--ink); line-height: 1.6; }
+  @media (max-width: 480px){
+    .news-item{ flex-direction:column; gap: 0.3rem; }
+    .news-date{ padding-top:0; }
+  }
+
+  footer{
+    border-top: 1px solid var(--line-soft);
+    padding-block: 28px clamp(28px, 6vw, 48px);
+  }
+  .scale-rule{
+    display:flex;
+    justify-content: space-between;
+    font-family:"IBM Plex Mono", monospace;
+    font-size: 0.66rem;
+    color: var(--steel-soft);
+    letter-spacing: 0.06em;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line-soft);
+    margin-bottom: 18px;
+  }
+  .footer-grid{
+    display:grid;
+    grid-template-columns: 1.3fr 1fr 1.3fr;
+    gap: 1.6rem;
+    font-size: 0.86rem;
+    color: var(--steel);
+  }
+  @media (max-width: 760px){ .footer-grid{ grid-template-columns: 1fr; } }
+  .footer-grid dt{ color: var(--steel-soft); font-size: 0.72rem; letter-spacing: 0.05em; margin-bottom: 0.3em; }
+  .footer-grid dd{ margin: 0 0 0.9em; color: var(--ink); }
+  .footer-bottom{
+    margin-top: 24px;
+    font-size: 0.76rem;
+    color: var(--steel-soft);
+    display:flex;
+    justify-content: space-between;
+    flex-wrap:wrap;
+    gap: 0.6rem;
+  }
+</style>
+
+<header class="site-nav">
+  <div class="wrap">
+    <a class="brand" href="#top">
+      <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+      <span class="brand-name">スカイライン・テクノロジーズ<small>SKYLINE TECHNOLOGIES, INC.</small></span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#about">理念</a></li>
+      <li><a href="#services">事業内容</a></li>
+      <li><a href="#works">実績</a></li>
+      <li><a href="#careers">採用</a></li>
+    </ul>
+    <a class="btn btn-ghost" href="#contact">お問い合わせ</a>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">SOFTWARE ENGINEERING FIRM, TOKYO</p>
+        <h1 class="hero-title">一つのビルではなく、<br>街を設計する。</h1>
+        <p class="hero-lead">
+          スカイライン・テクノロジーズは、基盤から尖塔まで――クラウド基盤・業務システム・新規事業開発を一気通貫で手がけるソフトウェア開発会社です。単体の機能ではなく、育ち続けるシステム群として設計します。
+        </p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="#services">事業内容を見る</a>
+          <a class="btn btn-ghost" href="#works">実績を見る</a>
+        </div>
+      </div>
+      <div class="skyline-visual" id="skylineVisual">
+        <canvas id="skylineCanvas"></canvas>
+        <span class="skyline-caption mono">FIG.01 — ELEVATION, EAST FACE</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="philosophy" id="about">
+    <div class="wrap">
+      <div class="philosophy-grid">
+        <div>
+          <p class="eyebrow">PHILOSOPHY</p>
+          <blockquote class="quote">高い建物は、<br>深い基盤の上にしか<br>立たない。</blockquote>
+        </div>
+        <div>
+          <h2 style="font-size:var(--fs-h3); margin-bottom:0.6em;">私たちの考え方</h2>
+          <p>
+            ソフトウェアも同じです。派手な機能や新しい技術は、地に足のついた設計と運用があってはじめて価値を持ちます。
+            スカイライン・テクノロジーズは2016年の創業以来、82名のエンジニアと共に、340件を超えるシステムを「建て」、そして「保守し続けて」きました。
+          </p>
+          <p>
+            私たちが大切にしているのは、竣工した日ではありません。10年後もそのシステムが、街の一部として動き続けていることです。
+          </p>
+        </div>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat"><b class="mono">2016</b><span>設立</span></div>
+        <div class="stat"><b class="mono">340+</b><span>開発実績（件）</span></div>
+        <div class="stat"><b class="mono">82</b><span>エンジニア数（名）</span></div>
+        <div class="stat"><b class="mono">96%</b><span>継続契約率</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="services">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">SERVICES — SECTION VIEW</p>
+        <h2>3つの高さで、システムを組み上げる</h2>
+        <p>私たちの事業は、建物の断面図のように3つの層で構成されています。上に行くほど不確実性は増し、下に行くほど責任は重くなります。</p>
+      </div>
+
+      <div class="elevation">
+        <div class="layer layer--spire">
+          <div class="layer-ruler">
+            <span class="alt mono">ALT.<br>180M+</span>
+            <span class="tag mono">尖塔層<br>SPIRE</span>
+          </div>
+          <div class="layer-body">
+            <h3>AI・新規事業開発</h3>
+            <p>まだ地図にない高さへ。生成AIの活用や新規事業のプロトタイピングを、小さく速く形にします。</p>
+            <div class="layer-tags">
+              <span class="chip">生成AI</span><span class="chip">プロトタイピング</span><span class="chip">R&D</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="layer">
+          <div class="layer-ruler">
+            <span class="alt mono">ALT.<br>040–180M</span>
+            <span class="tag mono">中層<br>MID-RISE</span>
+          </div>
+          <div class="layer-body">
+            <h3>業務システム・プロダクト開発</h3>
+            <p>現場の業務に合わせて設計する、使われ続けるソフトウェア。要件定義から運用まで、同じチームで開発します。</p>
+            <div class="layer-tags">
+              <span class="chip">基幹システム</span><span class="chip">Webアプリ</span><span class="chip">モバイル</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="layer">
+          <div class="layer-ruler">
+            <span class="alt mono">ALT.<br>000–040M</span>
+            <span class="tag mono">基盤層<br>FOUNDATION</span>
+          </div>
+          <div class="layer-body">
+            <h3>クラウド基盤・SRE</h3>
+            <p>大規模システムを支える、揺るがない地盤をつくる。アーキテクチャ設計から運用保守まで担います。</p>
+            <div class="layer-tags">
+              <span class="chip">AWS / GCP</span><span class="chip">Kubernetes</span><span class="chip">Observability</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="works">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">WORKS — SELECTED PROJECTS</p>
+        <h2>いくつかの「棟」をご紹介します</h2>
+        <p>竣工後も、私たちが保守と拡張に関わり続けているプロジェクトです。</p>
+      </div>
+
+      <div class="works-grid">
+        <article class="work-card">
+          <span class="work-code mono">PROJECT / HORIZON</span>
+          <h3>在庫最適化AIプラットフォーム</h3>
+          <span class="work-client">大手小売業（全国380店舗）</span>
+          <p>発注業務を需要予測AIで自動化し、店舗ごとの発注判断を一元化。</p>
+          <p class="work-result">→ 欠品率 <strong class="mono">42%</strong> 削減</p>
+          <div class="work-tags"><span class="chip">Python</span><span class="chip">需要予測AI</span><span class="chip">GCP</span></div>
+        </article>
+        <article class="work-card">
+          <span class="work-code mono">PROJECT / TRELLIS</span>
+          <h3>融資審査システム リプレイス</h3>
+          <span class="work-client">地方銀行</span>
+          <p>レガシーCOBOL資産を段階的に移行し、審査フローをマイクロサービス化。</p>
+          <p class="work-result">→ 審査時間 5営業日 <strong class="mono">→ 8時間</strong></p>
+          <div class="work-tags"><span class="chip">Java</span><span class="chip">マイクロサービス</span><span class="chip">セキュリティ監査</span></div>
+        </article>
+        <article class="work-card">
+          <span class="work-code mono">PROJECT / ATRIUM</span>
+          <h3>IoT稼働監視ダッシュボード</h3>
+          <span class="work-client">製造業（全国12工場）</span>
+          <p>設備稼働状況をリアルタイムに可視化し、異常を早期に検知する体制を構築。</p>
+          <p class="work-result">→ 突発停止 <strong class="mono">28%</strong> 削減</p>
+          <div class="work-tags"><span class="chip">IoT</span><span class="chip">リアルタイム処理</span><span class="chip">BIダッシュボード</span></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="careers" id="careers">
+    <div class="wrap careers-inner">
+      <div>
+        <p class="eyebrow">CAREERS</p>
+        <h2 style="font-size:var(--fs-h3); margin-top:0.6em;">高さを恐れないエンジニアへ。</h2>
+        <p>私たちが増員するのは、いつも「次の層」を任せられる人です。地盤を固める人も、尖塔を目指す人も、同じチームで働いています。</p>
+      </div>
+      <a class="btn btn-amber" href="#contact">採用について相談する</a>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="wrap contact-grid">
+      <div class="contact-inner">
+        <p class="eyebrow">CONTACT</p>
+        <h2>次の一棟を、<br>一緒に設計しませんか。</h2>
+        <p>新規開発、リプレイス、あるいは「まだ言葉になっていない」相談も。まずは断面図を描くところから始めましょう。</p>
+        <a class="btn btn-primary" href="mailto:hello@skyline-technologies.co.jp">プロジェクトについて相談する</a>
+      </div>
+
+      <div class="news-panel">
+        <div class="news-panel-head">
+          <p class="eyebrow">NEWS</p>
+          <span class="news-count mono">4 POSTS</span>
+        </div>
+        <ul class="news-list">
+          <li class="news-item">
+            <span class="news-date mono">2026.09.01</span>
+            <div class="news-body">
+              <span class="news-tag is-new mono">NEW / PLAN</span>
+              <span class="news-title">中期経営計画「NEXT SKYLINE 2030」を策定しました。</span>
+            </div>
+          </li>
+          <li class="news-item">
+            <span class="news-date mono">2026.07.15</span>
+            <div class="news-body">
+              <span class="news-tag mono">PRODUCT</span>
+              <span class="news-title">IoT稼働監視ダッシュボード「ATRIUM」の導入企業が50社を突破しました。</span>
+            </div>
+          </li>
+          <li class="news-item">
+            <span class="news-date mono">2026.04.01</span>
+            <div class="news-body">
+              <span class="news-tag mono">COMPANY</span>
+              <span class="news-title">新卒エンジニア12名が入社しました。</span>
+            </div>
+          </li>
+          <li class="news-item">
+            <span class="news-date mono">2026.02.10</span>
+            <div class="news-body">
+              <span class="news-tag mono">SERVICE</span>
+              <span class="news-title">生成AI活用支援サービスの提供を開始しました。</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="scale-rule mono">
+      <span>0M</span><span>40M</span><span>80M</span><span>120M</span><span>160M</span><span>200M</span>
+    </div>
+    <dl class="footer-grid">
+      <div>
+        <dt>会社名</dt>
+        <dd>スカイライン・テクノロジーズ株式会社</dd>
+        <dt>設立</dt>
+        <dd>2016年6月</dd>
+      </div>
+      <div>
+        <dt>従業員数</dt>
+        <dd>82名（エンジニア）</dd>
+        <dt>事業内容</dt>
+        <dd>ソフトウェア受託開発 / クラウドインテグレーション / 新規事業開発支援</dd>
+      </div>
+      <div>
+        <dt>所在地</dt>
+        <dd>東京都渋谷区東丘3-14-2 スカイラインビル9F</dd>
+        <dt>連絡先</dt>
+        <dd>hello@skyline-technologies.co.jp</dd>
+      </div>
+    </dl>
+    <div class="footer-bottom">
+      <span>© 2026 Skyline Technologies, Inc.</span>
+      <span class="mono">※本ページは架空の企業紹介ページです</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  function isDarkMode(){
+    var root = document.documentElement;
+    var explicit = root.getAttribute('data-theme');
+    if(explicit === 'dark') return true;
+    if(explicit === 'light') return false;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+
+  function token(name){
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  // deterministic pseudo-random so the skyline silhouette is stable
+  function makeRng(seed){
+    var s = seed % 2147483647;
+    if (s <= 0) s += 2147483646;
+    return function(){
+      s = (s * 16807) % 2147483647;
+      return (s - 1) / 2147483646;
+    };
+  }
+
+  function buildSkyline(width, count, rng){
+    var buildings = [];
+    var x = 0;
+    for (var i = 0; i < count; i++){
+      var w = width / count * (0.72 + rng() * 0.5);
+      var isSpire = rng() > 0.82;
+      var hFrac = isSpire ? (0.62 + rng() * 0.34) : (0.22 + rng() * 0.5);
+      buildings.push({ x: x, w: w, hFrac: hFrac, spire: isSpire });
+      x += width / count;
+    }
+    return buildings;
+  }
+
+  function draw(){
+    var canvas = document.getElementById('skylineCanvas');
+    if (!canvas) return;
+    var visual = document.getElementById('skylineVisual');
+    var rect = canvas.getBoundingClientRect();
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var w = Math.max(rect.width, 1);
+    var h = Math.max(rect.height, 1);
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+
+    var dark = isDarkMode();
+    var skyTop = token('--sky-top');
+    var skyBottom = token('--sky-bottom');
+    var buildingColor = token('--building');
+    var gridColor = token('--grid-line');
+    var windowColor = token('--window-lit');
+    var steel = token('--steel-soft');
+
+    // sky
+    var g = ctx.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, skyTop);
+    g.addColorStop(1, skyBottom);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+
+    // blueprint grid
+    ctx.strokeStyle = gridColor;
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = dark ? 0.35 : 0.55;
+    var gridStep = 32;
+    for (var gx = 0; gx <= w; gx += gridStep){
+      ctx.beginPath(); ctx.moveTo(gx + 0.5, 0); ctx.lineTo(gx + 0.5, h); ctx.stroke();
+    }
+    for (var gy = 0; gy <= h; gy += gridStep){
+      ctx.beginPath(); ctx.moveTo(0, gy + 0.5); ctx.lineTo(w, gy + 0.5); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    var baseline = h - 28;
+    var maxHeight = baseline - 20;
+    var rng = makeRng(90210);
+    var buildings = buildSkyline(w, 15, rng);
+
+    var tallest = null;
+
+    buildings.forEach(function(b){
+      var bh = maxHeight * b.hFrac;
+      var by = baseline - bh;
+      if (!tallest || bh > tallest.bh){ tallest = { x: b.x, w: b.w, by: by, bh: bh }; }
+
+      if (dark){
+        ctx.fillStyle = buildingColor;
+        ctx.fillRect(b.x, by, b.w, bh);
+        // lit windows
+        var rows = Math.max(2, Math.floor(bh / 14));
+        var cols = Math.max(1, Math.floor(b.w / 10));
+        for (var r = 0; r < rows; r++){
+          for (var c = 0; c < cols; c++){
+            if (rng() > 0.62){
+              ctx.globalAlpha = 0.55 + rng() * 0.4;
+              ctx.fillStyle = windowColor;
+              ctx.fillRect(b.x + 3 + c * 9, by + 6 + r * 12, 3, 4);
+            }
+          }
+        }
+        ctx.globalAlpha = 1;
+      } else {
+        // blueprint outline mode
+        ctx.strokeStyle = buildingColor;
+        ctx.lineWidth = 1.25;
+        ctx.globalAlpha = 0.75;
+        ctx.strokeRect(b.x + 0.5, by + 0.5, b.w - 1, bh - 1);
+        ctx.globalAlpha = 0.28;
+        var rows2 = Math.max(2, Math.floor(bh / 16));
+        for (var rr = 1; rr < rows2; rr++){
+          ctx.beginPath();
+          ctx.moveTo(b.x, by + (bh / rows2) * rr);
+          ctx.lineTo(b.x + b.w, by + (bh / rows2) * rr);
+          ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+      }
+    });
+
+    // ground line
+    ctx.strokeStyle = steel;
+    ctx.globalAlpha = 0.6;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, baseline + 0.5);
+    ctx.lineTo(w, baseline + 0.5);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    // altitude leader + label on tallest building
+    if (tallest){
+      var labelY = Math.max(14, tallest.by - 6);
+      ctx.strokeStyle = steel;
+      ctx.globalAlpha = 0.7;
+      ctx.setLineDash([2, 3]);
+      ctx.beginPath();
+      ctx.moveTo(tallest.x + tallest.w / 2, tallest.by);
+      ctx.lineTo(tallest.x + tallest.w / 2, labelY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = steel;
+      ctx.font = '10px "IBM Plex Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      var meters = Math.round((tallest.bh / maxHeight) * 200);
+      ctx.fillText(meters + 'M', tallest.x + tallest.w / 2, labelY);
+    }
+  }
+
+  function reveal(){
+    var visual = document.getElementById('skylineVisual');
+    if (visual) visual.classList.add('is-ready');
+  }
+
+  function init(){
+    draw();
+    reveal();
+  }
+
+  if (document.fonts && document.fonts.ready){
+    document.fonts.ready.then(draw);
+  }
+
+  window.addEventListener('load', init);
+  window.addEventListener('resize', function(){
+    window.requestAnimationFrame(draw);
+  });
+  if (window.matchMedia){
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw);
+  }
+
+  // in case load already fired
+  if (document.readyState === 'complete') init();
+})();
+</script>
